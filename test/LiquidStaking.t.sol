@@ -36,7 +36,7 @@ contract ContractTest is Test {
     function depositFor(address user, uint256 amount) public {
         vm.startPrank(user);
         aurora.approve(address(staking), amount);
-        staking.depositAll();
+        staking.deposit(amount);
         vm.stopPrank();
     }
 
