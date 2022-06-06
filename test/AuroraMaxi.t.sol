@@ -2,15 +2,16 @@
 pragma solidity ^0.8.13;
 
 import "../src/LiquidStaking.sol";
+import "../src/Strat-Implementations/AuroraMaxi.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import "forge-std/Test.sol";
 
 contract ContractTest is Test {
     AuroraLiquidStaking liquidStaking;
+    AuroraMaxi farmer;
     address admin = address(1);
     address harvester = address(2);
-    address farmer = address(3);
     address bob = address(4);
     address sam = address(5);
     address kate = address(6);
@@ -20,16 +21,19 @@ contract ContractTest is Test {
     IERC20 tri = IERC20(0xFa94348467f64D5A457F75F8bc40495D33c65aBB);
     IERC20 usn = IERC20(0x5183e1B1091804BC2602586919E6880ac1cf2896);
     address[] tokens = [address(bstn), address(ply), address(tri), address(usn)];
+    address[] returnsTokens = [address(aurora)];
     
 
     function setUp() public {
         liquidStaking = new AuroraLiquidStaking(admin, tokens);
+        farmer = new AuroraMaxi(address(liquidStaking), returnsTokens);
+
         deal(address(aurora), bob, 100000 ether);
         deal(address(aurora), sam, 10 ether);
         deal(address(aurora), kate, 10 ether);
         vm.startPrank(admin);
         liquidStaking.setHarvester(harvester);
-        liquidStaking.setFarmer(farmer);
+        liquidStaking.setFarmer(address(farmer));
         vm.stopPrank();
     }
 
@@ -44,24 +48,7 @@ contract ContractTest is Test {
     //         SHOULD PASS
     // ============================
 
-    function testDepositAurora() public {
-        depositFor(bob, 10 ether);
-        uint256 bal = liquidStaking.balanceOf(bob);
-        assertEq(bal, 10 ether);
-    }
-
-    function testReturns() public {
-        depositFor(bob, 10 ether);
-        vm.warp(block.timestamp + 24 weeks + 1);
-        vm.startPrank(admin);
-        liquidStaking.Unstake();
-        vm.warp(block.timestamp + 3 days);
-        liquidStaking.Withdraw();
-        uint256 bal = aurora.balanceOf(address(liquidStaking));
-        assert(bal > 10 ether);
-    }
-
-    function testHarvest() public {
+    function testFarming() public {
         depositFor(bob, 100000 ether);
         vm.warp(block.timestamp + 10 weeks);
         vm.startPrank(harvester);
@@ -69,34 +56,9 @@ contract ContractTest is Test {
         vm.warp(block.timestamp + 3 days);
         liquidStaking.harvest();
         liquidStaking.sendTokensToFarmer();
-    }
-
-    function testStAuroraAmounts() public {
-        depositFor(bob, 10 ether);
-        vm.warp(block.timestamp + 1 weeks);
-        depositFor(sam, 10 ether);
-        vm.warp(block.timestamp + 1 weeks);
-        depositFor(kate, 10 ether);
-        uint256 bobBal = liquidStaking.balanceOf(bob);
-        uint256 samBal = liquidStaking.balanceOf(sam);
-        uint256 kateBal = liquidStaking.balanceOf(kate);
-        assert(bobBal > samBal && samBal > kateBal);
-    }
-
-    // ============================
-    //         SHOULD FAIL
-    // ============================
-
-    function testCannotMoveRewardsToPending() public {
-        depositFor(bob, 10 ether);
-        vm.expectRevert("ONLY HARVESTER CAN HARVEST");
-        liquidStaking.moveRewardsToPending();
-    }
-
-    function testCannotUnstakeEarly() public {
-        depositFor(bob, 10 ether);
-        vm.startPrank(admin);
-        vm.expectRevert("DISTRIBUTION DATE NOT REACHED");
-        liquidStaking.Unstake();
+        farmer.putFundsToWork();
+        console.log(liquidStaking.staking().getUserShares(address(liquidStaking)));
+        farmer.Compound();
+        console.log(liquidStaking.staking().getUserShares(address(liquidStaking)));
     }
 }

@@ -128,13 +128,19 @@ contract AuroraLiquidStaking is ERC20 {
             uint256 mintAmount = (_amount * totalSupply()) / totalAurora;
             _mint(msg.sender, mintAmount);
         }
-        staking.stake(_amount);
+        stakeAurora();
+
     }
 
     // @notice Helper function to stake all of user's aurora balance
     function depositAll() external notPaused {
         uint256 auroraBalance = aurora.balanceOf(msg.sender);
         deposit(auroraBalance);
+    }
+
+    function stakeAurora() public notPaused{
+        uint256 balance = aurora.balanceOf(address(this));
+        staking.stake(balance);
     }
 
     // =====================================
@@ -245,6 +251,14 @@ contract AuroraLiquidStaking is ERC20 {
 
     function setDistributer(address _distributor) external onlyAdmin {
         distributor = _distributor;
+    }
+
+    // ====================================
+    //               HELPERS
+    // ====================================
+
+    function getRewardTokens() external view returns (IERC20[] memory) {
+        return rewardStreamTokens;
     }
 
 }
