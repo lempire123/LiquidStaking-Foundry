@@ -36,8 +36,8 @@ contract Distributor  {
         for(uint256 i; i < length; ++i) {
             uint256 tokenBal = tokens[i].balanceOf(address(this));
             tokens[i].transfer(msg.sender, tokenBal * share);
-            stAurora.burnStAurora(msg.sender, bal);
         }
+        stAurora.burnStAurora(msg.sender, bal);
     }
 
 

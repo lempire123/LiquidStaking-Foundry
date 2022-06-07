@@ -60,5 +60,8 @@ contract ContractTest is Test {
         console.log(liquidStaking.staking().getUserShares(address(liquidStaking)));
         farmer.Compound();
         console.log(liquidStaking.staking().getUserShares(address(liquidStaking)));
+        farmer.swapUSNforAurora();
+        farmer.Compound();
+        console.log(liquidStaking.staking().getUserShares(address(liquidStaking)));
     }
 }
