@@ -39,7 +39,7 @@ contract AuroraMaxi is Strategy {
     address[] public usdcToAurora;
 
     
-    constructor(address _stAurora, address[] memory _tokens) Strategy(_stAurora, _tokens) {
+    constructor(address _stAurora) Strategy(_stAurora) {
         uint256 length = rewardTokens.length;
         for(uint256 i; i < length; i++) {
             rewardTokens[i].approve(address(router), 2**256 - 1);

@@ -16,31 +16,25 @@ contract Strategy {
 
     IERC20[] public rewardTokens;
 
-    IERC20[] public returnTokens;
-
     modifier onlyStAurora() {
         require(msg.sender == address(stAurora), "ONLY STAURORA CAN CALL");
         _;
     }
 
-    constructor(address _stAurora, address[] memory _returnTokens) {
+    constructor(address _stAurora) {
         stAurora = AuroraLiquidStaking(_stAurora);
         rewardTokens = stAurora.getRewardTokens();
-        uint256 length = _returnTokens.length;
-        for(uint256 i; i < length; ++i) {
-            returnTokens.push(IERC20(_returnTokens[i]));
-        }
     }
 
     function putFundsToWork() external virtual {
         // Every unique strat will implement its own strategies
     }
 
-    function sendTokensBack() external onlyStAurora {
+    function sendTokensBack(address[] memory returnTokens) external onlyStAurora {
         uint256 length = returnTokens.length;
         for(uint256 i; i < length; ++i) {
-            uint256 bal = returnTokens[i].balanceOf(address(this));
-            returnTokens[i].transfer(address(stAurora), bal);
+            uint256 bal = IERC20(returnTokens[i]).balanceOf(address(this));
+            IERC20(returnTokens[i]).transfer(address(stAurora), bal);
         }
     }
 }

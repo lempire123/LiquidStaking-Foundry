@@ -45,6 +45,8 @@ contract AuroraLiquidStaking is ERC20 {
     address public admin;
     // Address in charge of harvesting rewards
     address public harvester;
+    // Distributor contract
+    address public distributor;
     // Distribution happense every 6 months
     uint256 public distributionPeriod = 24 weeks;
     // Next time distribution will take place
@@ -56,11 +58,9 @@ contract AuroraLiquidStaking is ERC20 {
     // Array of reward tokens
     IERC20[] public rewardStreamTokens;
     // Aurora Staking Contract
-    AuroraStaking public staking = AuroraStaking(0xccc2b1aD21666A5847A804a73a41F904C4a4A0Ec);
+    AuroraStaking public constant staking = AuroraStaking(0xccc2b1aD21666A5847A804a73a41F904C4a4A0Ec);
     // Contract which will handle farming with harvested rewards
     IFarmer public farmer;
-    // Distributor contract
-    address public distributor;
 
 
     // Only admin can access
@@ -158,11 +158,19 @@ contract AuroraLiquidStaking is ERC20 {
         staking.withdrawAll();
     }
 
-    function sendTokensToFarmer() external onlyHarvester {
+    function sendRewardTokensToFarmer() external onlyHarvester {
         uint256 length = rewardStreamTokens.length;
         for(uint i; i < length; ++i) {
             uint256 tokenBalance = rewardStreamTokens[i].balanceOf(address(this));
             rewardStreamTokens[i].transfer(address(farmer), tokenBalance);
+        }
+    }
+
+    function sendOtherTokensToFarmer(address[] memory _tokens) external onlyHarvester {
+        uint256 length = _tokens.length;
+        for(uint i; i < length; ++i) {
+            uint256 tokenBalance = IERC20(_tokens[i]).balanceOf(address(this));
+            IERC20(_tokens[i]).transfer(address(farmer), tokenBalance);
         }
     }
 

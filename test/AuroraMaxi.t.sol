@@ -7,7 +7,7 @@ import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 import "forge-std/Test.sol";
 
-contract ContractTest is Test {
+contract AuroraMaxiTest is Test {
     AuroraLiquidStaking liquidStaking;
     AuroraMaxi farmer;
     address admin = address(1);
@@ -21,12 +21,11 @@ contract ContractTest is Test {
     IERC20 tri = IERC20(0xFa94348467f64D5A457F75F8bc40495D33c65aBB);
     IERC20 usn = IERC20(0x5183e1B1091804BC2602586919E6880ac1cf2896);
     address[] tokens = [address(bstn), address(ply), address(tri), address(usn)];
-    address[] returnsTokens = [address(aurora)];
     
 
     function setUp() public {
         liquidStaking = new AuroraLiquidStaking(admin, tokens);
-        farmer = new AuroraMaxi(address(liquidStaking), returnsTokens);
+        farmer = new AuroraMaxi(address(liquidStaking));
 
         deal(address(aurora), bob, 100000 ether);
         deal(address(aurora), sam, 10 ether);
@@ -55,12 +54,10 @@ contract ContractTest is Test {
         liquidStaking.moveRewardsToPending();
         vm.warp(block.timestamp + 3 days);
         liquidStaking.harvest();
-        liquidStaking.sendTokensToFarmer();
+        liquidStaking.sendRewardTokensToFarmer();
         farmer.putFundsToWork();
-        console.log(liquidStaking.staking().getUserShares(address(liquidStaking)));
-        farmer.Compound();
-        console.log(liquidStaking.staking().getUserShares(address(liquidStaking)));
         farmer.swapUSNforAurora();
+        console.log(liquidStaking.staking().getUserShares(address(liquidStaking)));
         farmer.Compound();
         console.log(liquidStaking.staking().getUserShares(address(liquidStaking)));
     }
