@@ -94,7 +94,8 @@ contract BTCMaxi is Strategy {
 
     function putFundsToWork() external override {
         for(uint256 i; i < 3; ++i) {
-            swapTokens(address(rewardTokens[i]), address(BTC));
+            uint256 balance = rewardTokens[i].balanceOf(address(this));
+            swapTokens(address(rewardTokens[i]), address(BTC), balance);
         }
     }
 
@@ -107,17 +108,19 @@ contract BTCMaxi is Strategy {
             0,
             block.timestamp + 60
         );
-        swapTokens(address(USDC), address(BTC));
+        uint256 balance = USDC.balanceOf(address(this));
+        swapTokens(address(USDC), address(BTC), balance);
     }
 
-    function swapTokens(address token0, address token1) public {
-        uint256 balance = IERC20(token0).balanceOf(address(this));
+    function swapTokens(address token0, address token1, uint256 amount) public {
+        // uint256 balance = IERC20(token0).balanceOf(address(this));
+        IERC20(token0).approve(address(router), 2**256 - 1);
         address[] memory path = new address[](3);
         path[0] = token0;
         path[1] = address(wnear);
         path[2] = token1;
         router.swapExactTokensForTokens(
-            balance,
+            amount,
             0,
             path,
             address(this),

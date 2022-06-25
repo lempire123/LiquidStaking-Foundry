@@ -22,6 +22,7 @@ contract BTCMaxiTest is Test {
     IERC20 usn = IERC20(0x5183e1B1091804BC2602586919E6880ac1cf2896);
     IERC20 btc = IERC20(0xF4eB217Ba2454613b15dBdea6e5f22276410e89e);
     IERC20 usdc = IERC20(0xB12BFcA5A55806AaF64E99521918A4bf0fC40802);
+    IERC20 wnear = IERC20(0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d);
     address[] tokens = [address(bstn), address(ply), address(tri), address(usn)];
     
 
@@ -72,17 +73,25 @@ contract BTCMaxiTest is Test {
     }
 
     function testCompound() public {
-        // deal(address(aurora), address(farmer), 100 ether);
-        // deal(address(usdc), address(farmer), 150 * 10**6);
         deal(address(btc), address(farmer), 15 * 10**8);
         console.log(btc.balanceOf(address(farmer)) / 10**6);
         farmer.lendBTC();
         console.log(btc.balanceOf(address(farmer)) / 10**6);
         farmer.borrowUSDC(10000*10**6);
         console.log(usdc.balanceOf(address(farmer)) / 10**6);
-        farmer.swapTokens(address(usdc), address(aurora));
+        farmer.swapTokens(address(usdc), address(aurora), 10000*10**6);
         console.log(liquidStaking.staking().getUserShares(address(liquidStaking)));
         farmer.Compound();
         console.log(liquidStaking.staking().getUserShares(address(liquidStaking)));
+    }
+
+    function testAddLiquidity() public {
+        deal(address(btc), address(farmer), 10 * 10**8);
+        farmer.swapTokens(address(btc), address(usdc), 5 * 10**8);
+        console.log(btc.balanceOf(address(farmer)));
+        console.log(usdc.balanceOf(address(farmer))); 
+        farmer.addLiquidityPair(address(btc), address(usdc));
+        console.log(btc.balanceOf(address(farmer)));
+        console.log(usdc.balanceOf(address(farmer)));
     }
 }
