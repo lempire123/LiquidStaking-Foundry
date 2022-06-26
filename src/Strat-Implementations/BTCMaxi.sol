@@ -80,6 +80,11 @@ contract BTCMaxi is Strategy {
     cToken cUSDC = cToken(0xe5308dc623101508952948b141fD9eaBd3337D99);
     Comptroller bTroller = Comptroller(0x6De54724e128274520606f038591A00C5E94a1F6);
 
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "ONLY ADMIN CAN CALL");
+        _;
+    }
+
     
     constructor(address _stAurora) Strategy(_stAurora) {
         admin = msg.sender;
@@ -113,7 +118,6 @@ contract BTCMaxi is Strategy {
     }
 
     function swapTokens(address token0, address token1, uint256 amount) public {
-        // uint256 balance = IERC20(token0).balanceOf(address(this));
         IERC20(token0).approve(address(router), 2**256 - 1);
         address[] memory path = new address[](3);
         path[0] = token0;
@@ -128,7 +132,7 @@ contract BTCMaxi is Strategy {
         );
     }
 
-    function lendBTC() external {
+    function lendBTC() external onlyAdmin {
         uint256 balance = BTC.balanceOf(address(this));
         BTC.approve(address(cBTC), balance);
         cBTC.mint(balance);
@@ -138,28 +142,28 @@ contract BTCMaxi is Strategy {
         bTroller.enterMarkets(cTokens);
     }
 
-    function borrowUSDC(uint256 amount) external {
+    function borrowUSDC(uint256 amount) external onlyAdmin {
         cUSDC.borrow(amount);
     }
 
-    function repayUSDC() external {
+    function repayUSDC() external onlyAdmin {
         uint256 balance = USDC.balanceOf(address(this));
         USDC.approve(address(cUSDC), balance);
         cUSDC.repayBorrow(balance);
     }
 
-    function redeemBTC() external {
+    function redeemBTC() external onlyAdmin {
         uint256 balance = cBTC.balanceOf(address(this));
         cBTC.redeem(balance);
     }
 
-    function Compound() public {
+    function Compound() public onlyAdmin {
         uint256 auroraBal = aurora.balanceOf(address(this));
         aurora.transfer(address(stAurora), auroraBal);
         stAurora.stakeAurora();
     }
 
-    function addLiquidityPair(address token0, address token1) external {
+    function addLiquidityPair(address token0, address token1) external onlyAdmin {
         uint256 balance0 = IERC20(token0).balanceOf(address(this));
         uint256 balance1 = IERC20(token1).balanceOf(address(this));
         IERC20(token0).approve(address(router), balance0);

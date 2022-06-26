@@ -6,7 +6,7 @@ import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 interface IFarmer {
     function putFundsToWork() external;
-    function sendTokensBack() external;
+    function sendTokensBack(address[] memory returnTokens) external;
 }
 
 interface AuroraStaking {
@@ -174,11 +174,6 @@ contract AuroraLiquidStaking is ERC20 {
         }
     }
 
-    // @notice Put funds to work
-    function earn() external onlyHarvester {
-        farmer.putFundsToWork();
-    }
-
     // ====================================
     //              DISTRIBUTION
     // ====================================
@@ -198,8 +193,8 @@ contract AuroraLiquidStaking is ERC20 {
     }
 
     // @notice Withdraw rewards from farmer contract
-    function withdrawFarmer() external onlyAdmin {
-        farmer.sendTokensBack();
+    function withdrawFarmer(address[] memory tokens) external onlyAdmin {
+        farmer.sendTokensBack(tokens);
     }
 
     // @notice Sends tokens to distributor
