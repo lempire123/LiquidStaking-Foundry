@@ -32,6 +32,7 @@ contract DistributorTest is Test {
     function setUp() public {
         liquidStaking = new AuroraLiquidStaking(admin, tokens);
         farmer = new BTCMaxi(address(liquidStaking));
+        distributor = new Distributor(admin, address(liquidStaking));
 
         deal(address(aurora), bob, 100000 ether);
         deal(address(aurora), sam, 10 ether);
@@ -39,6 +40,7 @@ contract DistributorTest is Test {
         vm.startPrank(admin);
         liquidStaking.setHarvester(harvester);
         liquidStaking.setFarmer(address(farmer));
+        liquidStaking.setDistributer(address(distributor));
         vm.stopPrank();
     }
 
@@ -55,7 +57,7 @@ contract DistributorTest is Test {
 
     function testFarming() public {
         depositFor(bob, 100000 ether);
-        vm.warp(block.timestamp + 10 weeks);
+        vm.warp(block.timestamp + 24 weeks);
         vm.startPrank(harvester);
         liquidStaking.moveRewardsToPending();
         vm.warp(block.timestamp + 3 days);
@@ -63,12 +65,18 @@ contract DistributorTest is Test {
         liquidStaking.sendRewardTokensToFarmer();
         vm.stopPrank();
         vm.startPrank(admin);
-        console.log(btc.balanceOf(address(farmer)));
         farmer.putFundsToWork();
         farmer.swapUSNforBTC();
-        console.log(btc.balanceOf(address(farmer)));
+        console.log(btc.balanceOf(address(farmer)) / 10**6);
         liquidStaking.withdrawFarmer(returnTokens);
         console.log(btc.balanceOf(address(liquidStaking)) / 10**6);
+        liquidStaking.sendTokensToDistributor(returnTokens);
+        console.log(btc.balanceOf(address(distributor)) / 10**6);
+        distributor.setTokens(returnTokens);
+        vm.stopPrank();
+        vm.startPrank(bob);
+        distributor.getMyShare();
+        console.log(btc.balanceOf(bob) / 10**6);
     }
 
     function testCompound() public {

@@ -198,7 +198,7 @@ contract AuroraLiquidStaking is ERC20 {
     }
 
     // @notice Sends tokens to distributor
-    function sendTokensToDistributor(address[] memory tokens) external onlyAdmin {
+    function sendTokensToDistributor(address[] memory tokens) external onlyAdmin DistributionDatePast {
         uint256 length = tokens.length;
         for(uint256 i; i < length; ++i) {
             uint256 bal = IERC20(tokens[i]).balanceOf(address(this));

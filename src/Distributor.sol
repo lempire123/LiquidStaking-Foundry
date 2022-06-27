@@ -8,7 +8,7 @@ interface main {
     function totalSupply() external view returns (uint256);
 }
 
-contract Distributor  {
+contract Distributor {
 
     address public admin;
 
