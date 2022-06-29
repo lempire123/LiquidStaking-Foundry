@@ -206,6 +206,7 @@ contract AuroraLiquidStaking is ERC20 {
         }
     }
 
+    // Allows distributor to burn stAurora on redemption
     function burnStAurora(address _account, uint256 _amount) external onlyDistributor {
         _burn(_account, _amount);
     }
